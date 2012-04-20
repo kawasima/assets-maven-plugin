@@ -1,0 +1,14 @@
+---
+sourceDirectory: src/test/resources
+targetDirectory: target
+rules:
+  - target: js/action.js
+    version: 1.7
+    components:
+      - js/a1.js
+      - js/a2.js
+  - target: css/action.css
+    version: 1.7
+    components:
+      - css/a1.css
+      - css/a2.css
