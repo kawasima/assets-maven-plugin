@@ -3,8 +3,6 @@
  */
 package net.unit8.maven.plugins.assets;
 
-import static org.junit.Assert.*;
-
 import java.io.File;
 
 import org.junit.Test;
@@ -20,6 +18,7 @@ public class AggregateInHtmlMojoTest extends AggregateInHtmlMojo {
 		AggregateInHtmlMojo mojo = new AggregateInHtmlMojo();
 		mojo.recipeFile = new File("src/test/resources/recipe.yml");
 		mojo.sourceDirectory = new File("src/test/resources/html");
+		mojo.targetDirectory = new File("target/html");
 		mojo.execute();
 	}
 
