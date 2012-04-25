@@ -1,11 +1,16 @@
 package net.unit8.maven.plugins.assets;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
@@ -20,7 +25,7 @@ public class YuiMinifier {
 	private String minifyJsSingle(final File file) throws IOException {
 		Reader in = null;
 		try {
-			in = new FileReader(file);
+			in = new InputStreamReader(new FileInputStream(file), "UTF-8");
 			JavaScriptCompressor compressor = new JavaScriptCompressor(in,
 					new ErrorReporter() {
 						public void warning(String message, String sourceName,
@@ -70,9 +75,10 @@ public class YuiMinifier {
 	public void minifyJs(List<File> files, File outputFile) throws IOException {
 		if (!outputFile.getParentFile().exists())
 			FileUtils.forceMkdir(outputFile.getParentFile());
-		FileWriter out = null;
+		
+		Writer out = null;
 		try {
-			out = new FileWriter(outputFile);
+			out = new OutputStreamWriter(new FileOutputStream(outputFile), "UTF-8");
 			for (File file : files) {
 				out.write(minifyJsSingle(file));
 			}
