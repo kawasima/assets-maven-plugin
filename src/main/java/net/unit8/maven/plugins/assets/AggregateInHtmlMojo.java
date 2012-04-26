@@ -1,8 +1,9 @@
 package net.unit8.maven.plugins.assets;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -104,7 +105,7 @@ public class AggregateInHtmlMojo extends AbstractAssetsMojo {
 			Reader in = null;
 			Document doc = null;
 			try {
-				in = new FileReader(htmlFile);
+				in = new InputStreamReader(new FileInputStream(htmlFile), encoding);
 				parser.parse(new InputSource(in));
 				doc = parser.getDocument();
 

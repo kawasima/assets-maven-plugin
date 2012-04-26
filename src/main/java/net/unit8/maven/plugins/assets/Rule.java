@@ -5,7 +5,7 @@ import java.util.List;
 public class Rule {
 	private String target;
 	private String version;
-	private Boolean minify;
+	private Boolean minify = false;
 	private List<String> components;
 
 	public String getTarget() {

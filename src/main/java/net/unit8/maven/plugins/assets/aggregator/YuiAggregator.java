@@ -1,12 +1,15 @@
-package net.unit8.maven.plugins.assets;
+package net.unit8.maven.plugins.assets.aggregator;
 
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.util.List;
+
+import net.unit8.maven.plugins.assets.Aggregator;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -16,11 +19,11 @@ import org.mozilla.javascript.EvaluatorException;
 import com.yahoo.platform.yui.compressor.CssCompressor;
 import com.yahoo.platform.yui.compressor.JavaScriptCompressor;
 
-public class YuiMinifier {
+public class YuiAggregator extends Aggregator {
 	private String minifyJsSingle(final File file) throws IOException {
 		Reader in = null;
 		try {
-			in = new FileReader(file);
+			in = new InputStreamReader(new FileInputStream(file), getEncoding());
 			JavaScriptCompressor compressor = new JavaScriptCompressor(in,
 					new ErrorReporter() {
 						public void warning(String message, String sourceName,
@@ -67,7 +70,12 @@ public class YuiMinifier {
 		return writer.toString();
 	}
 
-	public void minifyJs(List<File> files, File outputFile) throws IOException {
+	/**
+	 * Minify javascript files.
+	 *
+	 * @see net.unit8.maven.plugins.assets.minifier.Aggregator#aggregateJs(java.util.List, java.io.File)
+	 */
+	public void aggregateJs(List<File> files, File outputFile) throws IOException {
 		if (!outputFile.getParentFile().exists())
 			FileUtils.forceMkdir(outputFile.getParentFile());
 		FileWriter out = null;
@@ -81,16 +89,21 @@ public class YuiMinifier {
 		}
 	}
 
-	public void minifyCss(List<File> files, File outputFile) throws IOException {
+	/**
+	 * Minify css files.
+	 *
+	 * @see net.unit8.maven.plugins.assets.minifier.Aggregator#aggregateCss(java.util.List, java.io.File)
+	 */
+	public void aggregateCss(List<File> files, File outputFile) throws IOException {
 		if (!outputFile.getParentFile().exists())
 			FileUtils.forceMkdir(outputFile.getParentFile());
 		FileWriter out = null;
 		try {
 			out = new FileWriter(outputFile);
 			for (File file : files) {
-				FileReader in = null;
+				Reader in = null;
 				try {
-					in = new FileReader(file);
+					in = new InputStreamReader(new FileInputStream(file), getEncoding());
 					out.write(minifyCssSingle(in));
 				} finally {
 					IOUtils.closeQuietly(in);

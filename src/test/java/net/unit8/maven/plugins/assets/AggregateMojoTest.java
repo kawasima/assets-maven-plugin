@@ -9,6 +9,7 @@ public class AggregateMojoTest extends AggregateMojo {
 	@Test
 	public void test() throws Exception {
 		AggregateMojo mojo = new AggregateMojo();
+		mojo.encoding = "UTF-8";
 		mojo.recipeFile = new File("src/test/resources/recipe.yml");
 		mojo.execute();
 	}
