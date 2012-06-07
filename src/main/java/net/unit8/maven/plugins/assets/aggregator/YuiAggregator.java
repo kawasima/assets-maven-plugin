@@ -2,11 +2,13 @@ package net.unit8.maven.plugins.assets.aggregator;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.util.List;
 
 import net.unit8.maven.plugins.assets.Aggregator;
@@ -78,9 +80,9 @@ public class YuiAggregator extends Aggregator {
 	public void aggregateJs(List<File> files, File outputFile) throws IOException {
 		if (!outputFile.getParentFile().exists())
 			FileUtils.forceMkdir(outputFile.getParentFile());
-		FileWriter out = null;
+		Writer out = null;
 		try {
-			out = new FileWriter(outputFile);
+			out = new OutputStreamWriter(new FileOutputStream(outputFile), getEncoding());
 			for (File file : files) {
 				out.write(minifyJsSingle(file));
 			}
@@ -97,9 +99,9 @@ public class YuiAggregator extends Aggregator {
 	public void aggregateCss(List<File> files, File outputFile) throws IOException {
 		if (!outputFile.getParentFile().exists())
 			FileUtils.forceMkdir(outputFile.getParentFile());
-		FileWriter out = null;
+		Writer out = null;
 		try {
-			out = new FileWriter(outputFile);
+			out = new OutputStreamWriter(new FileOutputStream(outputFile), getEncoding());
 			for (File file : files) {
 				Reader in = null;
 				try {
