@@ -1,14 +1,18 @@
 ---
 sourceDirectory: src/test/resources
 targetDirectory: target
+precompilers: [ less, coffee ]
 rules:
   - target: js/action.js
     version: 1.7
     components:
       - js/a1.js
       - js/a2.js
+      - js/a3.coffee
   - target: css/action.css
     version: 1.7
+    minify: true
     components:
       - css/a1.css
       - css/a2.css
+      - css/a3.less

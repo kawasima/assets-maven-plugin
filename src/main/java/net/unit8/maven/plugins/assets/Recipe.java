@@ -6,6 +6,7 @@ public class Recipe {
 	private String targetDirectory;
 	private String sourceDirectory;
 
+	private List<String> precompilers;
 	private List<Rule> rules;
 
 	public String getTargetDirectory() {
@@ -20,6 +21,15 @@ public class Recipe {
 	public void setSourceDirectory(String sourceDirectory) {
 		this.sourceDirectory = sourceDirectory;
 	}
+
+	public List<String> getPrecompilers() {
+		return precompilers;
+	}
+
+	public void setPrecompilers(List<String> precompilers) {
+		this.precompilers = precompilers;
+	}
+
 	public List<Rule> getRules() {
 		return rules;
 	}

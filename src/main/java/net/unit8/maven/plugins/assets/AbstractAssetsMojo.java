@@ -22,6 +22,11 @@ public abstract class AbstractAssetsMojo extends AbstractMojo {
 	 */
 	protected String encoding;
 
+	/**
+	 * @parameter expression="${workingDirectory}" default-value="target/assets-working"
+	 */
+	protected File workingDirectory;
+
 	protected Recipe readRecipe() throws MojoExecutionException {
 		Yaml yaml = new Yaml();
 		Reader in = null;
