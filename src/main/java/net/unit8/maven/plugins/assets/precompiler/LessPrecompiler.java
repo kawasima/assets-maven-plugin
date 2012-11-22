@@ -27,7 +27,11 @@ public class LessPrecompiler extends Precompiler {
 				FilenameUtils.getBaseName(source.getName())
 				+ "." + getExtension());
 		LessCompiler compiler = new LessCompiler();
-		compiler.compile(source, outputFile);
+		compiler.setEncoding(getEncoding());
+		String lessCode = FileUtils.readFileToString(source, getEncoding());
+		FileUtils.writeStringToFile(outputFile,
+				compiler.compile(lessCode),
+				getEncoding());
 		return outputFile;
 	}
 }

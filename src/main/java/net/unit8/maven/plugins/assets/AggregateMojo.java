@@ -30,7 +30,7 @@ public class AggregateMojo extends AbstractAssetsMojo {
 
 	protected Map<String, Precompiler> availablePrecompilers = new HashMap<String, Precompiler>();
 
-	public AggregateMojo() throws MojoFailureException {
+	public void initializePrecompilers() throws MojoExecutionException {
 		if (precompilerClasses == null) {
 			precompilerClasses = new ArrayList<Class<? extends Precompiler>>();
 			precompilerClasses.add(LessPrecompiler.class);
@@ -40,14 +40,17 @@ public class AggregateMojo extends AbstractAssetsMojo {
 		for (Class<? extends Precompiler> precompilerClass : precompilerClasses) {
 			try {
 				Precompiler precompiler = precompilerClass.newInstance();
+				if (encoding != null)
+					precompiler.setEncoding(encoding);
 				availablePrecompilers.put(precompiler.getName(), precompiler);
 			} catch (Exception e) {
-				throw new MojoFailureException(precompilerClass + " can't be instantiated.", e);
+				throw new MojoExecutionException(precompilerClass + " can't be instantiated.", e);
 			}
 		}
 	}
 
 	public void execute() throws MojoExecutionException, MojoFailureException {
+		initializePrecompilers();
 		Recipe recipe = readRecipe();
 		File sourceDirectory = (recipe.getSourceDirectory() != null) ? new File(recipe.getSourceDirectory()) : new File(".");
 		File targetDirectory = (recipe.getTargetDirectory() != null) ? new File(recipe.getTargetDirectory()) : new File(".");
@@ -78,9 +81,9 @@ public class AggregateMojo extends AbstractAssetsMojo {
 					files.add(componentFile);
 				}
 				if (StringUtils.equals(FilenameUtils.getExtension(rule.getTarget()), "js")) {
-					aggregator.aggregateJs(files, new File(targetDirectory, rule.getTarget()));
+					aggregator.aggregateJs(files, new File(targetDirectory, rule.getVersioningTarget()));
 				} else if (StringUtils.equals(FilenameUtils.getExtension(rule.getTarget()), "css")) {
-					aggregator.aggregateCss(files, new File(targetDirectory, rule.getTarget()));
+					aggregator.aggregateCss(files, new File(targetDirectory, rule.getVersioningTarget()));
 				} else {
 					throw new MojoExecutionException("Unknown target: " + rule.getTarget());
 				}

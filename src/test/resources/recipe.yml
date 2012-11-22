@@ -10,7 +10,6 @@ rules:
       - js/a2.js
       - js/a3.coffee
   - target: css/action.css
-    version: 1.7
     minify: true
     components:
       - css/a1.css

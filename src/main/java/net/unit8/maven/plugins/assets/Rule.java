@@ -2,6 +2,9 @@ package net.unit8.maven.plugins.assets;
 
 import java.util.List;
 
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang.StringUtils;
+
 public class Rule {
 	private String target;
 	private String version;
@@ -13,6 +16,19 @@ public class Rule {
 	}
 	public void setTarget(String target) {
 		this.target = target;
+	}
+
+	public String getVersioningTarget() {
+		if (StringUtils.isNotEmpty(version)) {
+			return FilenameUtils.concat(
+				FilenameUtils.getPath(target),
+				FilenameUtils.getBaseName(target)
+					+ "-" + version
+					+ "." + FilenameUtils.getExtension(target)
+			);
+		} else {
+			return target;
+		}
 	}
 	public String getVersion() {
 		return version;
