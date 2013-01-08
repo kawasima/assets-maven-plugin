@@ -1,13 +1,12 @@
 package net.unit8.maven.plugins.assets.precompiler;
 
-import java.io.File;
-
 import net.unit8.maven.plugins.assets.Precompiler;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.lesscss.LessCompiler;
+
+import java.io.File;
 
 public class LessPrecompiler extends Precompiler {
 	public String getName() {
@@ -27,8 +26,11 @@ public class LessPrecompiler extends Precompiler {
 				FilenameUtils.getBaseName(source.getName())
 				+ "." + getExtension());
 		LessCompiler compiler = new LessCompiler();
+
 		compiler.setEncoding(getEncoding());
+        compiler.setCustomJs(getClass().getClassLoader().getResource("envjs-patch.js"));
 		String lessCode = FileUtils.readFileToString(source, getEncoding());
+
 		FileUtils.writeStringToFile(outputFile,
 				compiler.compile(lessCode),
 				getEncoding());
