@@ -1,3 +1,4 @@
-var mod = function(a, b) {
-	return a % b;
-}
+var mod = function (a, b) {
+        'use strict';
+        return a % b;
+    };

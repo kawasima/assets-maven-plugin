@@ -7,6 +7,7 @@ public class Recipe {
 	private String sourceDirectory;
 
 	private List<String> precompilers;
+    private List<String> analyzers;
 	private List<Rule> rules;
 
 	public String getTargetDirectory() {
@@ -30,7 +31,15 @@ public class Recipe {
 		this.precompilers = precompilers;
 	}
 
-	public List<Rule> getRules() {
+    public List<String> getAnalyzers() {
+        return analyzers;
+    }
+
+    public void setAnalyzers(List<String> analyzers) {
+        this.analyzers = analyzers;
+    }
+
+    public List<Rule> getRules() {
 		return rules;
 	}
 	public void setRules(List<Rule> rules) {

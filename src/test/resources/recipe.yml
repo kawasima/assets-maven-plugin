@@ -1,6 +1,7 @@
 ---
 sourceDirectory: src/test/resources
 targetDirectory: target
+analyzers: [ jslint ]
 precompilers: [ less, coffee ]
 rules:
   - target: js/action.js

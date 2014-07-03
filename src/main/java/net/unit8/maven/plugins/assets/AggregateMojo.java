@@ -2,6 +2,7 @@ package net.unit8.maven.plugins.assets;
 
 import net.unit8.maven.plugins.assets.aggregator.ClosureAggregator;
 import net.unit8.maven.plugins.assets.aggregator.SimpleAggregator;
+import net.unit8.maven.plugins.assets.analyzer.JSLintAnalyzer;
 import net.unit8.maven.plugins.assets.precompiler.CoffeePrecompiler;
 import net.unit8.maven.plugins.assets.precompiler.LessPrecompiler;
 import net.unit8.maven.plugins.assets.watcher.WatcherEventHandler;
@@ -29,13 +30,19 @@ public class AggregateMojo extends AbstractAssetsMojo {
 	protected List<Class<? extends Precompiler>> precompilerClasses;
 
     /**
+     * @parameter
+     */
+    protected List<Class<? extends Analyzer>> analyzerClasses;
+
+    /**
      * @parameter expression="${assets.auto}" default-value=false
      */
     protected boolean auto;
 
 	protected Map<String, Precompiler> availablePrecompilers = new HashMap<>();
+    protected Map<String, Analyzer> availableAnalyzers = new HashMap<>();
 
-	public void initializePrecompilers() throws MojoExecutionException {
+	protected void initializePrecompilers() throws MojoExecutionException {
 		if (precompilerClasses == null) {
 			precompilerClasses = new ArrayList<>();
 			precompilerClasses.add(LessPrecompiler.class);
@@ -54,6 +61,22 @@ public class AggregateMojo extends AbstractAssetsMojo {
 		}
 	}
 
+    protected void initializeAnalyzers() throws MojoExecutionException {
+        if (analyzerClasses == null) {
+            analyzerClasses = new ArrayList<>();
+            analyzerClasses.add(JSLintAnalyzer.class);
+        }
+        for (Class<? extends Analyzer> analyzerClass : analyzerClasses) {
+            try {
+                Analyzer analyzer = analyzerClass.newInstance();
+                if (encoding != null)
+                    analyzer.setEncoding(encoding);
+                availableAnalyzers.put(analyzer.getName(), analyzer);
+            } catch (Exception e) {
+                throw new MojoExecutionException(analyzerClass + " can't be instantiated.", e);
+            }
+        }
+    }
     protected Path precompile(Recipe recipe, Path componentFile) throws MojoExecutionException{
         List<String> precompilers = recipe.getPrecompilers();
         if (precompilers == null)
@@ -74,6 +97,26 @@ public class AggregateMojo extends AbstractAssetsMojo {
         }
         return componentFile;
     }
+
+    protected void analyze(Recipe recipe, Path componentFile) throws MojoExecutionException {
+        List<String> analyzers = recipe.getAnalyzers();
+        if (analyzers == null)
+            return;
+
+        for (String analyzerName : analyzers) {
+            Analyzer analyzer = availableAnalyzers.get(analyzerName);
+            if (analyzer == null)
+                throw new MojoExecutionException("Can't find analyzer " + analyzerName);
+            if (analyzer.canAnalyze(componentFile)) {
+                try {
+                    analyzer.analyze(componentFile);
+                } catch (Exception e) {
+                    throw new MojoExecutionException("Analyze error.", e);
+                }
+            }
+        }
+    }
+
     protected void build(final Recipe recipe) throws MojoExecutionException {
         final Path sourceDirectory = recipe.getSourceDirectory() != null ?
                 Paths.get(recipe.getSourceDirectory()) : Paths.get(".");
@@ -93,13 +136,12 @@ public class AggregateMojo extends AbstractAssetsMojo {
 
                         final PathMatcher matcher = FileSystems.getDefault()
                                 .getPathMatcher("glob:" + component);
-                        getLog().info("glob:" + component);
                         Files.walkFileTree(sourceDirectory, new SimpleFileVisitor<Path>() {
                             @Override
                             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                                getLog().info(sourceDirectory.relativize(file) + ":" + matcher.matches(sourceDirectory.relativize(file)));
                                 if (matcher.matches(sourceDirectory.relativize(file))) {
                                     try {
+                                        analyze(recipe, file);
                                         files.add(precompile(recipe, file));
                                     } catch (MojoExecutionException e) {
                                         throw new IOException(e);
@@ -109,6 +151,7 @@ public class AggregateMojo extends AbstractAssetsMojo {
                             }
                         });
                     } else {
+                        analyze(recipe, sourceDirectory.resolve(component));
                         files.add(precompile(recipe, sourceDirectory.resolve(component)));
                     }
                 }
@@ -118,6 +161,9 @@ public class AggregateMojo extends AbstractAssetsMojo {
 
                 if (rule.getTarget().endsWith(".js")) {
                     aggregator.aggregateJs(files, targetPath);
+
+
+
                 } else if (rule.getTarget().endsWith(".css")) {
                     aggregator.aggregateCss(files, targetPath);
                 } else {
@@ -138,6 +184,7 @@ public class AggregateMojo extends AbstractAssetsMojo {
             }
         }
 		initializePrecompilers();
+        initializeAnalyzers();
 		final Recipe recipe = readRecipe();
 
         build(recipe);

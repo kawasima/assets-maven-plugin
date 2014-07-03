@@ -16,7 +16,11 @@ public class CoffeePrecompiler extends Precompiler {
 	private Scriptable globalScope;
 
 	public CoffeePrecompiler() {
-		initCoffeescriptCompiler();
+        try {
+            initCoffeescriptCompiler();
+        } catch (IOException e) {
+            throw new IOError(e);
+        }
 	}
 
 	@Override
@@ -57,26 +61,21 @@ public class CoffeePrecompiler extends Precompiler {
 		}
 	}
 
-	private void initCoffeescriptCompiler() throws Error {
+	private void initCoffeescriptCompiler() throws IOException {
 		ClassLoader classLoader = getClass().getClassLoader();
-        try (InputStream inputStream = classLoader
-                .getResourceAsStream("org/jcoffeescript/coffee-script.js")) {
-            try (Reader reader = new InputStreamReader(inputStream, "UTF-8")) {
-                Context context = Context.enter();
-                context.setOptimizationLevel(-1); // Without this, Rhino
-                // hits a 64K bytecode
-                // limit and fails
-                try {
-                    globalScope = context.initStandardObjects();
-                    context.evaluateReader(globalScope, reader,
-                            "coffee-script.js", 0, null);
-                } finally {
-                    Context.exit();
-                }
+        try (InputStream is = classLoader.getResourceAsStream("org/jcoffeescript/coffee-script.js");
+             Reader reader = new InputStreamReader(is)) {
+            Context context = Context.enter();
+            context.setOptimizationLevel(-1); // Without this, Rhino
+            // hits a 64K bytecode
+            // limit and fails
+            try {
+                globalScope = context.initStandardObjects();
+                context.evaluateReader(globalScope, reader,
+                        "coffee-script.js", 0, null);
+            } finally {
+                Context.exit();
             }
-        } catch(IOException e) {
-            throw new IOError(e);
         }
 	}
-
 }
