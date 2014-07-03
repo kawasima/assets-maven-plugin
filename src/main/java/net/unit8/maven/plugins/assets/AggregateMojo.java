@@ -1,7 +1,7 @@
 package net.unit8.maven.plugins.assets;
 
+import net.unit8.maven.plugins.assets.aggregator.ClosureAggregator;
 import net.unit8.maven.plugins.assets.aggregator.SimpleAggregator;
-import net.unit8.maven.plugins.assets.aggregator.YuiAggregator;
 import net.unit8.maven.plugins.assets.precompiler.CoffeePrecompiler;
 import net.unit8.maven.plugins.assets.precompiler.LessPrecompiler;
 import net.unit8.maven.plugins.assets.watcher.WatcherEventHandler;
@@ -28,6 +28,9 @@ public class AggregateMojo extends AbstractAssetsMojo {
 	 */
 	protected List<Class<? extends Precompiler>> precompilerClasses;
 
+    /**
+     * @parameter expression="${assets.auto}" default-value=false
+     */
     protected boolean auto;
 
 	protected Map<String, Precompiler> availablePrecompilers = new HashMap<>();
@@ -52,7 +55,11 @@ public class AggregateMojo extends AbstractAssetsMojo {
 	}
 
     protected Path precompile(Recipe recipe, Path componentFile) throws MojoExecutionException{
-        for (String precompilerName : recipe.getPrecompilers()) {
+        List<String> precompilers = recipe.getPrecompilers();
+        if (precompilers == null)
+            return componentFile;
+
+        for (String precompilerName : precompilers) {
             Precompiler precompiler = availablePrecompilers.get(precompilerName);
             if (precompiler == null)
                 throw new MojoExecutionException("Can't find precompiler " + precompilerName);
@@ -68,10 +75,12 @@ public class AggregateMojo extends AbstractAssetsMojo {
         return componentFile;
     }
     protected void build(final Recipe recipe) throws MojoExecutionException {
-        Path sourceDirectory = (recipe.getSourceDirectory() != null) ? Paths.get(recipe.getSourceDirectory()) : Paths.get(".");
-        Path targetDirectory = (recipe.getTargetDirectory() != null) ? Paths.get(recipe.getTargetDirectory()) : Paths.get(".");
+        final Path sourceDirectory = recipe.getSourceDirectory() != null ?
+                Paths.get(recipe.getSourceDirectory()) : Paths.get(".");
+        final Path targetDirectory = recipe.getTargetDirectory() != null ?
+                Paths.get(recipe.getTargetDirectory()) : Paths.get(".");
         Aggregator simpleAggregator = new SimpleAggregator();
-        Aggregator minifyAggregator = new YuiAggregator();
+        Aggregator minifyAggregator = new ClosureAggregator();
 
         try {
             for (Rule rule : recipe.getRules()) {
@@ -81,16 +90,18 @@ public class AggregateMojo extends AbstractAssetsMojo {
                 final List<Path> files = new ArrayList<>();
                 for (String component : rule.getComponents()) {
                     if (component.contains("*")) {
-                        final PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:" + sourceDirectory.toString() + "/" + component);
-                        getLog().info("glob:" + sourceDirectory.toString() + "/" + component);
+
+                        final PathMatcher matcher = FileSystems.getDefault()
+                                .getPathMatcher("glob:" + component);
+                        getLog().info("glob:" + component);
                         Files.walkFileTree(sourceDirectory, new SimpleFileVisitor<Path>() {
                             @Override
                             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                                getLog().info(file.toString() + matcher.matches(file));
-                                if (matcher.matches(file)) {
+                                getLog().info(sourceDirectory.relativize(file) + ":" + matcher.matches(sourceDirectory.relativize(file)));
+                                if (matcher.matches(sourceDirectory.relativize(file))) {
                                     try {
                                         files.add(precompile(recipe, file));
-                                    } catch(MojoExecutionException e) {
+                                    } catch (MojoExecutionException e) {
                                         throw new IOException(e);
                                     }
                                 }
@@ -131,6 +142,7 @@ public class AggregateMojo extends AbstractAssetsMojo {
 
         build(recipe);
         if (auto) {
+            getLog().info("Auto compile mode.");
             final WatcherService watcherService = new WatcherService();
             watcherService.addWatcher(Paths.get(recipe.getSourceDirectory()));
             watcherService.addHandler(new WatcherEventHandler() {

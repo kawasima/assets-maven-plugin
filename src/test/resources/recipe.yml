@@ -5,6 +5,7 @@ precompilers: [ less, coffee ]
 rules:
   - target: js/action.js
     version: 1.7
+    minify: true
     components:
       - js/*.js
       - js/*.coffee

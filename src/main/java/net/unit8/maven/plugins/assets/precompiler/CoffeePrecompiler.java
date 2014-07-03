@@ -59,29 +59,24 @@ public class CoffeePrecompiler extends Precompiler {
 
 	private void initCoffeescriptCompiler() throws Error {
 		ClassLoader classLoader = getClass().getClassLoader();
-        try {
-            try (InputStream inputStream = classLoader
-                    .getResourceAsStream("org/jcoffeescript/coffee-script.js")) {
-                try (Reader reader = new InputStreamReader(inputStream, "UTF-8")) {
-                    Context context = Context.enter();
-                    context.setOptimizationLevel(-1); // Without this, Rhino
-                    // hits a 64K bytecode
-                    // limit and fails
-                    try {
-                        globalScope = context.initStandardObjects();
-                        context.evaluateReader(globalScope, reader,
-                                "coffee-script.js", 0, null);
-                    } finally {
-                        Context.exit();
-                    }
+        try (InputStream inputStream = classLoader
+                .getResourceAsStream("org/jcoffeescript/coffee-script.js")) {
+            try (Reader reader = new InputStreamReader(inputStream, "UTF-8")) {
+                Context context = Context.enter();
+                context.setOptimizationLevel(-1); // Without this, Rhino
+                // hits a 64K bytecode
+                // limit and fails
+                try {
+                    globalScope = context.initStandardObjects();
+                    context.evaluateReader(globalScope, reader,
+                            "coffee-script.js", 0, null);
+                } finally {
+                    Context.exit();
                 }
-            } catch (UnsupportedEncodingException e) {
-                throw new Error(e); // This should never happen
             }
-		} catch (IOException e) {
-			throw new Error(e); // This should never happen
-		}
-
+        } catch(IOException e) {
+            throw new IOError(e);
+        }
 	}
 
 }
