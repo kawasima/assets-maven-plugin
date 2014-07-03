@@ -6,9 +6,8 @@ rules:
   - target: js/action.js
     version: 1.7
     components:
-      - js/a1.js
-      - js/a2.js
-      - js/a3.coffee
+      - js/*.js
+      - js/*.coffee
   - target: css/action.css
     minify: true
     components:

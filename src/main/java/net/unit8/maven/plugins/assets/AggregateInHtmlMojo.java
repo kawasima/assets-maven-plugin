@@ -1,38 +1,25 @@
 package net.unit8.maven.plugins.assets;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.xerces.parsers.DOMParser;
-import org.cyberneko.html.HTMLConfiguration;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
+import org.jsoup.select.Elements;
+
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.xpath.XPathExpressionException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.util.*;
 
 /**
  * HTMLで読み込んでいるscript, cssをaggregateしたファイルに置き換えます。
@@ -54,65 +41,47 @@ public class AggregateInHtmlMojo extends AbstractAssetsMojo {
 	 */
 	protected File targetDirectory;
 
-	private void rewriteAssets(Document doc, Recipe recipe, File htmlFile, String tagName, String attrName, String optCondition) throws XPathExpressionException {
-		XPathFactory factory = XPathFactory.newInstance();
-		XPath xpath = factory.newXPath();
-
-		String xpathStr = "//" + tagName;
-		if (optCondition != null) {
-			xpathStr += optCondition;
-		}
-		NodeList scripts = (NodeList)xpath.evaluate(xpathStr, doc, XPathConstants.NODESET);
-		Set<AggregatedFile> aggregatedFiles = new HashSet<AggregatedFile>();
-		List<Element> originalScripts = new ArrayList<Element>();
-		for (int i=0; i<scripts.getLength(); i++) {
-			Element script = (Element)scripts.item(i);
-			Node srcAttr = script.getAttributes().getNamedItem(attrName);
-			if (srcAttr == null)
-				continue;
-			File srcFile = new File(htmlFile.getParent(), srcAttr.getNodeValue());
+	private void rewriteAssets(Document doc, Recipe recipe, File htmlFile, String tagName, String attrName) throws XPathExpressionException {
+		Set<AggregatedFile> aggregatedFiles = new HashSet<>();
+		List<Element> originalScripts = new ArrayList<>();
+        Elements elements = doc.select(tagName + "[" + attrName + "]");
+		for (Element el : elements) {
+			File srcFile = new File(htmlFile.getParent(), el.attr("src"));
 			for (Rule rule : recipe.getRules()) {
 				for (String component : rule.getComponents()) {
 					if (FilenameUtils.equalsNormalized(
 						srcFile.getAbsolutePath(),
 						new File(recipe.getSourceDirectory(), component).getAbsolutePath())) {
-						aggregatedFiles.add(new AggregatedFile(rule.getTarget(), script.getParentNode()));
-						originalScripts.add(script);
+						//aggregatedFiles.add(new AggregatedFile(rule.getTarget(), script.getParentNode()));
+						//originalScripts.add(script);
 					}
 				}
 			}
 		}
 
-		for (Element el : originalScripts) {
-			el.getParentNode().removeChild(el);
-		}
 		for (AggregatedFile aggregatedFile : aggregatedFiles) {
 			Element script = doc.createElement(tagName);
-			script.setAttribute(attrName, aggregatedFile.getName());
-			aggregatedFile.getParentNode().appendChild(script);
+			script.attr(attrName, aggregatedFile.getName());
+			//aggregatedFile.getParentNode().appendChild(script);
 		}
 	}
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		if (targetDirectory == null)
 			targetDirectory = sourceDirectory;
 		Recipe recipe = readRecipe();
-		HTMLConfiguration config = new HTMLConfiguration();
-		config.setProperty("http://cyberneko.org/html/properties/names/elems", "match");
-		DOMParser parser = new DOMParser(config);
 
 		Collection<File> htmlFiles = FileUtils.listFiles(sourceDirectory, new String[]{"html"}, true);
 		for (File htmlFile : htmlFiles) {
-			Reader in = null;
+			InputStream in = null;
 			Document doc = null;
 			try {
-				in = new InputStreamReader(new FileInputStream(htmlFile), encoding);
-				parser.parse(new InputSource(in));
-				doc = parser.getDocument();
+				in = new FileInputStream(htmlFile);
+                doc = Jsoup.parse(in, encoding, null);
 
 				// javascript
-				rewriteAssets(doc, recipe, htmlFile, "script", "src", null);
+				rewriteAssets(doc, recipe, htmlFile, "script", "src");
 				// stylesheet
-				rewriteAssets(doc, recipe, htmlFile, "link", "href", "[@rel='stylesheet']");
+				rewriteAssets(doc, recipe, htmlFile, "link", "href");
 			} catch(Exception e) {
 				throw new MojoExecutionException("Error in parsing " + htmlFile, e);
 			} finally {
@@ -128,7 +97,7 @@ public class AggregateInHtmlMojo extends AbstractAssetsMojo {
 				temp = File.createTempFile("assets", ".html");
 				Transformer transformer = tf.newTransformer();
 				fos = new FileOutputStream(temp);
-				transformer.transform(new DOMSource(doc), new StreamResult(fos));
+				//transformer.transform(new DOMSource(doc), new StreamResult(fos));
 				FileUtils.deleteQuietly(outHtmlFile);
 				if (!outHtmlFile.getParentFile().exists())
 					FileUtils.forceMkdir(outHtmlFile.getParentFile());
@@ -167,10 +136,8 @@ public class AggregateInHtmlMojo extends AbstractAssetsMojo {
 		}
 		@Override
 		public boolean equals(Object o) {
-			if (!(o instanceof AggregatedFile))
-				return false;
-			return StringUtils.equals(this.name, ((AggregatedFile)o).getName());
-		}
+            return o instanceof AggregatedFile && StringUtils.equals(this.name, ((AggregatedFile) o).getName());
+        }
 
 		private String name;
 		private Node parentNode;

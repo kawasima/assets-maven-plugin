@@ -1,44 +1,39 @@
 package net.unit8.maven.plugins.assets.aggregator;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.util.List;
-
 import net.unit8.maven.plugins.assets.Aggregator;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+
+import static java.nio.file.StandardOpenOption.APPEND;
+import static java.nio.file.StandardOpenOption.CREATE;
 
 public class SimpleAggregator extends Aggregator {
-	public void aggregateJs(List<File> files, File outputFile) throws IOException {
-		if (!outputFile.getParentFile().exists())
-			FileUtils.forceMkdir(outputFile.getParentFile());
-		Writer out = null;
-		try {
-			out = new OutputStreamWriter(new FileOutputStream(outputFile), getEncoding());
-			for (File file : files) {
-				out.write(FileUtils.readFileToString(file, getEncoding()));
-			}
-		} finally {
-			IOUtils.closeQuietly(out);
-		}
+    @Override
+	public void aggregateJs(List<Path> files, Path outputFile) throws IOException {
+		if (Files.notExists(outputFile.getParent()))
+            Files.createDirectories(outputFile.getParent());
+
+        for (Path file : files) {
+            Files.write(outputFile, Files.readAllLines(file, Charset.forName(getEncoding())),
+                    Charset.forName(getEncoding()),
+                    CREATE ,APPEND);
+        }
 	}
 
-	public void aggregateCss(List<File> files, File outputFile) throws IOException {
-		if (!outputFile.getParentFile().exists())
-			FileUtils.forceMkdir(outputFile.getParentFile());
-		Writer out = null;
-		try {
-			out = new OutputStreamWriter(new FileOutputStream(outputFile), getEncoding());
-			for (File file : files) {
-				out.write(FileUtils.readFileToString(file, getEncoding()));
-			}
-		} finally {
-			IOUtils.closeQuietly(out);
-		}
+    @Override
+	public void aggregateCss(List<Path> files, Path outputFile) throws IOException {
+        if (Files.notExists(outputFile.getParent()))
+            Files.createDirectories(outputFile.getParent());
+
+        for (Path file : files) {
+            Files.write(outputFile, Files.readAllLines(file, Charset.forName(getEncoding())),
+                    Charset.forName(getEncoding()),
+                    CREATE, APPEND);
+        }
 	}
 
 }

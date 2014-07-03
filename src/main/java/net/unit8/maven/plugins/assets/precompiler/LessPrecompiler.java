@@ -1,13 +1,12 @@
 package net.unit8.maven.plugins.assets.precompiler;
 
-import java.io.File;
-
 import net.unit8.maven.plugins.assets.Precompiler;
-
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.StringUtils;
 import org.lesscss.LessCompiler;
+
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class LessPrecompiler extends Precompiler {
 	public String getName() {
@@ -17,21 +16,24 @@ public class LessPrecompiler extends Precompiler {
 	public String getExtension() {
 		return "css";
 	}
-	public boolean canPrecompile(File file) {
-		return StringUtils.equals(FilenameUtils.getExtension(file.getName()), "less");
+
+    @Override
+	public boolean canPrecompile(Path file) {
+		return file.toString().endsWith(".less");
 	}
 
-	public File precompile(File source, File outputDir) throws Exception {
-		FileUtils.forceMkdir(outputDir);
-		File outputFile = new File(outputDir,
-				FilenameUtils.getBaseName(source.getName())
+    @Override
+	public Path precompile(Path source, Path outputDir) throws Exception {
+        Files.createDirectories(outputDir);
+
+		Path outputFile = outputDir.resolve(
+				FilenameUtils.getBaseName(source.getFileName().toString())
 				+ "." + getExtension());
 		LessCompiler compiler = new LessCompiler();
 		compiler.setEncoding(getEncoding());
-		String lessCode = FileUtils.readFileToString(source, getEncoding());
-		FileUtils.writeStringToFile(outputFile,
-				compiler.compile(lessCode),
-				getEncoding());
+
+		String lessCode = new String(Files.readAllBytes(source), getEncoding());
+        Files.write(outputFile, compiler.compile(lessCode).getBytes(Charset.forName(getEncoding())));
 		return outputFile;
 	}
 }

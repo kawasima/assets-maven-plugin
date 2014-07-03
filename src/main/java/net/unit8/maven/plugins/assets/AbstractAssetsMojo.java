@@ -1,15 +1,14 @@
 package net.unit8.maven.plugins.assets;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-
-import org.apache.commons.io.IOUtils;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.yaml.snakeyaml.Yaml;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.Reader;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 
 public abstract class AbstractAssetsMojo extends AbstractMojo {
 	/**
@@ -29,15 +28,10 @@ public abstract class AbstractAssetsMojo extends AbstractMojo {
 
 	protected Recipe readRecipe() throws MojoExecutionException {
 		Yaml yaml = new Yaml();
-		Reader in = null;
-		try {
-			in = new InputStreamReader(new FileInputStream(recipeFile), encoding);
-			Recipe recipe = yaml.loadAs(in, Recipe.class);
-			return recipe;
+		try (Reader reader = Files.newBufferedReader(recipeFile.toPath(), Charset.forName(encoding))) {
+			return yaml.loadAs(reader, Recipe.class);
 		} catch (IOException e) {
 			throw new MojoExecutionException("Can't find recipe file", e);
-		} finally {
-			IOUtils.closeQuietly(in);
 		}
 	}
 
