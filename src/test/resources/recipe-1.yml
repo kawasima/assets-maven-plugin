@@ -1,0 +1,18 @@
+---
+sourceDirectory: src/test/resources
+targetDirectory: target
+analyzers: [ jslint ]
+precompilers: [ less, coffee ]
+rules:
+  - target: js/action.js
+    version: 1.7
+    minify: false
+    components:
+      - js/*.js
+      - js/*.coffee
+  - target: css/action.css
+    minify: false
+    components:
+      - css/a1.css
+      - css/a2.css
+      - css/a3.less

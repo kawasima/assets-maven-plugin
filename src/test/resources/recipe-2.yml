@@ -5,7 +5,7 @@ analyzers: [ jslint ]
 precompilers: [ less, coffee ]
 rules:
   - target: js/action.js
-    version: 1.7
+    version: 2
     minify: true
     components:
       - js/*.js
