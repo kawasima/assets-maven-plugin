@@ -9,6 +9,9 @@ import net.unit8.maven.plugins.assets.watcher.WatcherEventHandler;
 import net.unit8.maven.plugins.assets.watcher.WatcherService;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -19,24 +22,19 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @phase compile
- * @goal aggregate
+ * Aggregate asset files.
+ *
  * @author kawasima
  */
+@Mojo(name = "aggregate", defaultPhase = LifecyclePhase.COMPILE)
 public class AggregateMojo extends AbstractAssetsMojo {
-	/**
-	 * @parameter
-	 */
+    @Parameter
 	protected List<Class<? extends Precompiler>> precompilerClasses;
 
-    /**
-     * @parameter
-     */
+    @Parameter
     protected List<Class<? extends Analyzer>> analyzerClasses;
 
-    /**
-     * @parameter expression="${assets.auto}" default-value=false
-     */
+    @Parameter(defaultValue = "false", property = "assets.auto")
     protected boolean auto;
 
 	protected Map<String, Precompiler> availablePrecompilers = new HashMap<>();
@@ -196,6 +194,7 @@ public class AggregateMojo extends AbstractAssetsMojo {
                 @Override
                 public void handle(Path path) {
                     try {
+                        getLog().info("Found a file change event. Start aggregattion...");
                         build(recipe);
                     } catch(MojoExecutionException e) {
                         getLog().error(e);

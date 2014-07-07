@@ -19,8 +19,11 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class ClosureAggregator extends Aggregator {
+    private static final Logger logger = Logger.getLogger(ClosureAggregator.class.getName());
+
 	/**
 	 * Minify javascript files.
 	 *
@@ -41,6 +44,7 @@ public class ClosureAggregator extends Aggregator {
         if (result.success) {
             Files.write(outputFile, Arrays.asList(compiler.toSourceArray()), Charset.forName(getEncoding()));
         }
+        logger.fine("Aggregated javascripts to " + outputFile + ".");
 	}
 
 	/**
@@ -72,6 +76,7 @@ public class ClosureAggregator extends Aggregator {
                 result.append(prettyPrinterPass.getPrettyPrintedString());
             }
             Files.write(outputFile, Arrays.asList(result.toString()), Charset.forName(getEncoding()));
+            logger.fine("Aggregated stylesheets to " + outputFile + ".");
         } catch (GssParserException e) {
             throw new IOException(e);
         }

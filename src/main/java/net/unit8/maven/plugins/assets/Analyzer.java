@@ -3,6 +3,8 @@ package net.unit8.maven.plugins.assets;
 import java.nio.file.Path;
 
 /**
+ * Analyzer class.
+ *
  * @author kawasima
  */
 public abstract class Analyzer {

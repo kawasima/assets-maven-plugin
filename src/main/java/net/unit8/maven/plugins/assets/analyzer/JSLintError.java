@@ -1,6 +1,8 @@
 package net.unit8.maven.plugins.assets.analyzer;
 
 /**
+ * Error object for JSLint.
+ *
  * @author kawasima
  */
 public class JSLintError {

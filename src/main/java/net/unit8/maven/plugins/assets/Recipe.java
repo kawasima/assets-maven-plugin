@@ -2,6 +2,11 @@ package net.unit8.maven.plugins.assets;
 
 import java.util.List;
 
+/**
+ * Recipe file
+ *
+ * @author kawasima
+ */
 public class Recipe {
 	private String targetDirectory;
 	private String sourceDirectory;

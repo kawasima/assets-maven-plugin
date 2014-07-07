@@ -10,12 +10,11 @@ Goals
 Goal                   |Description
 -----------------------|-------------------------------
 assets:aggregate       |Aggregate asset files according to the recipe file.
-assets:aggreate-in-html|Rewrite the html file that is using assets according to the recipe file.
 
 ### assets:aggregate
 
 Full name
-:net.unit8.maven.plugins:assets-maven-plugin:0.1.1-SNAPSHOT:aggregate
+:net.unit8.maven.plugins:assets-maven-plugin:0.2.0-SNAPSHOT:aggregate
 
 Description
 :Aggregate asset files according to the recipe file.
@@ -27,6 +26,7 @@ Name             |Type   |Description
 recipeFile       |String |Recipe file path
 encoding         |String |charset of source files
 workingDirectory |String |The base directory of working files
+auto             |Boolean|Wherher auto re-aggregate When source files are changed,
 
 Recipe file
 -----------
@@ -40,9 +40,8 @@ The recipe file is written how to aggregate asset files.
       - target: js/all.js
         version: 1.7
         components:
-          - js/a1.js
-          - js/a2.js
-          - js/a3.coffee
+          - js/*.js
+          - js/*.coffee
       - target: css/all.css
         version: 1.7
         minify: true

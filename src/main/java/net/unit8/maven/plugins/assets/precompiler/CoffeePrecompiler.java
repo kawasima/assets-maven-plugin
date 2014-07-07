@@ -11,9 +11,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
+import java.util.logging.Logger;
 
 public class CoffeePrecompiler extends Precompiler {
-	private Scriptable globalScope;
+    private static final Logger logger = Logger.getLogger(CoffeePrecompiler.class.getName());
+
+    private Scriptable globalScope;
 
 	public CoffeePrecompiler() {
         try {
@@ -54,7 +57,10 @@ public class CoffeePrecompiler extends Precompiler {
                 Files.createDirectories(target);
 			Path outputFile = target.resolve(
 					FilenameUtils.getBaseName(source.getFileName().toString()) + "." + getExtension());
-            Files.write(outputFile, Arrays.asList(compiledStr), Charset.forName(getEncoding()), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+            Files.write(outputFile, Arrays.asList(compiledStr),
+                    Charset.forName(getEncoding()),
+                    StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+            logger.fine("precompiled coffee(" + source +") to java(" + outputFile + ". " );
 			return outputFile;
 		} finally {
 			Context.exit();

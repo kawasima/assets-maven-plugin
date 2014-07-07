@@ -1,9 +1,8 @@
 package net.unit8.maven.plugins.assets;
 
-import java.util.List;
-
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.StringUtils;
+
+import java.util.List;
 
 public class Rule {
 	private String target;
@@ -19,7 +18,7 @@ public class Rule {
 	}
 
 	public String getVersioningTarget() {
-		if (StringUtils.isNotEmpty(version)) {
+		if (version != null) {
 			return FilenameUtils.concat(
 				FilenameUtils.getPath(target),
 				FilenameUtils.getBaseName(target)

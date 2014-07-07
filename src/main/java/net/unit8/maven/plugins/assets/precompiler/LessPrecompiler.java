@@ -7,9 +7,12 @@ import org.lesscss.LessCompiler;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.logging.Logger;
 
 public class LessPrecompiler extends Precompiler {
-	public String getName() {
+    private static final Logger logger = Logger.getLogger(LessPrecompiler.class.getName());
+
+    public String getName() {
 		return "less";
 	}
 
@@ -34,6 +37,7 @@ public class LessPrecompiler extends Precompiler {
 
 		String lessCode = new String(Files.readAllBytes(source), getEncoding());
         Files.write(outputFile, compiler.compile(lessCode).getBytes(Charset.forName(getEncoding())));
+        logger.fine("precompiled less(" + source +") to java(" + outputFile + ". " );
 		return outputFile;
 	}
 }

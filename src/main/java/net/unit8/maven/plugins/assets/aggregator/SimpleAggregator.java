@@ -7,11 +7,13 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.logging.Logger;
 
 import static java.nio.file.StandardOpenOption.APPEND;
 import static java.nio.file.StandardOpenOption.CREATE;
 
 public class SimpleAggregator extends Aggregator {
+    private static final Logger logger = Logger.getLogger(SimpleAggregator.class.getName());
     @Override
 	public void aggregateJs(List<Path> files, Path outputFile) throws IOException {
 		if (Files.notExists(outputFile.getParent()))
@@ -22,7 +24,8 @@ public class SimpleAggregator extends Aggregator {
                     Charset.forName(getEncoding()),
                     CREATE ,APPEND);
         }
-	}
+        logger.fine("Aggregated javascripts to " + outputFile + ".");
+    }
 
     @Override
 	public void aggregateCss(List<Path> files, Path outputFile) throws IOException {
@@ -34,6 +37,7 @@ public class SimpleAggregator extends Aggregator {
                     Charset.forName(getEncoding()),
                     CREATE, APPEND);
         }
+        logger.fine("Aggregated stylesheets to " + outputFile + ".");
 	}
 
 }

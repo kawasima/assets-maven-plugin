@@ -2,6 +2,11 @@ package net.unit8.maven.plugins.assets;
 
 import java.nio.file.Path;
 
+/**
+ * Precompiler class.
+ *
+ * @author kawasima
+ */
 public abstract class Precompiler {
 	private String encoding = "UTF-8";
 

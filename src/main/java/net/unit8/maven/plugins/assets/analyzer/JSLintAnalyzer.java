@@ -1,8 +1,7 @@
 package net.unit8.maven.plugins.assets.analyzer;
 
 import net.unit8.maven.plugins.assets.Analyzer;
-import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.plugin.logging.SystemStreamLog;
+import net.unit8.maven.plugins.assets.precompiler.LessPrecompiler;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.NativeArray;
 import org.mozilla.javascript.NativeObject;
@@ -14,12 +13,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
+ * An analyzer by JSLint.
+ *
  * @author kawasima
  */
 public class JSLintAnalyzer extends Analyzer {
-    private static final Log logger = new SystemStreamLog();
+    private static final Logger logger = Logger.getLogger(LessPrecompiler.class.getName());
     private Scriptable globalScope;
 
     public JSLintAnalyzer() {
@@ -71,9 +73,9 @@ public class JSLintAnalyzer extends Analyzer {
                     source.toAbsolutePath().toString(), 0, null);
             if (result != null) {
                 List<JSLintError> errors = parseError((NativeArray) result);
-                logger.warn(source + ": " + errors.size() + " warnings founds.");
+                logger.warning(source + ": " + errors.size() + " warnings founds.");
                 for(JSLintError error : errors) {
-                    logger.warn(error.toString());
+                    logger.warning(error.toString());
                 }
             }
         } finally {

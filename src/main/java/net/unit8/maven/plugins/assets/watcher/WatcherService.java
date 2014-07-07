@@ -74,7 +74,6 @@ public class WatcherService {
                             Watchable watchable = key.watchable();
                             if (watchable instanceof Path) {
                                 Path dir = (Path) watchable;
-                                System.out.println(event.kind().name()+ ":" + dir.resolve(path));
                                 for (WatcherEventHandler handler : handlers) {
                                     handler.handle(dir.resolve(path));
                                 }
