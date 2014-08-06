@@ -93,7 +93,7 @@ public class AggregateMojoTest extends AbstractMojoTestCase {
         Files.setLastModifiedTime(Paths.get("src/test/resources/js/a1.js"),
                 FileTime.fromMillis(modifiedTime));
 
-        Thread.sleep(1000);
+        Thread.sleep(2000);
         assertTrue(Files.getLastModifiedTime(aggregatedJs).to(TimeUnit.MILLISECONDS) > modifiedTime);
         service.shutdown();
     }

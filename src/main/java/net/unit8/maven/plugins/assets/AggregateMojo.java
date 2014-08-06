@@ -137,7 +137,8 @@ public class AggregateMojo extends AbstractAssetsMojo {
                         Files.walkFileTree(sourceDirectory, new SimpleFileVisitor<Path>() {
                             @Override
                             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                                if (matcher.matches(sourceDirectory.relativize(file))) {
+                                if (matcher.matches(sourceDirectory.relativize(file))
+                                        && !isIgnorePattern(file)) {
                                     try {
                                         analyze(recipe, file);
                                         files.add(precompile(recipe, file));
@@ -160,8 +161,6 @@ public class AggregateMojo extends AbstractAssetsMojo {
                 if (rule.getTarget().endsWith(".js")) {
                     aggregator.aggregateJs(files, targetPath);
 
-
-
                 } else if (rule.getTarget().endsWith(".css")) {
                     aggregator.aggregateCss(files, targetPath);
                 } else {
@@ -173,6 +172,7 @@ public class AggregateMojo extends AbstractAssetsMojo {
         }
 
     }
+
 	public void execute() throws MojoExecutionException, MojoFailureException {
         if (workingDirectory != null && !workingDirectory.exists()) {
             try {
@@ -193,6 +193,8 @@ public class AggregateMojo extends AbstractAssetsMojo {
             watcherService.addHandler(new WatcherEventHandler() {
                 @Override
                 public void handle(Path path) {
+                    if (isIgnorePattern(path))
+                        return;
                     try {
                         getLog().info("Found a file change event. Start aggregattion...");
                         build(recipe);
@@ -218,4 +220,12 @@ public class AggregateMojo extends AbstractAssetsMojo {
             }
         }
 	}
+
+    protected boolean isIgnorePattern(Path file) {
+        String filename = file.getFileName().getFileName().toString();
+        return filename.endsWith("~")
+                || filename.startsWith("#")
+                || filename.startsWith(".")
+                || filename.endsWith(".swp");
+    }
 }
