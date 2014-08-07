@@ -15,9 +15,9 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.attribute.FileTime;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class AggregateMojoTest extends AbstractMojoTestCase {
 
@@ -85,15 +85,29 @@ public class AggregateMojoTest extends AbstractMojoTestCase {
         });
 
         Path aggregatedJs = Paths.get("target/js/action-3.js");
-        Thread.sleep(1000);
-        assertTrue(Files.exists(aggregatedJs));
+
+        for(int i=0; ; i++) {
+            if (Files.exists(aggregatedJs))
+                break;
+            if (i > 5)
+                fail();
+            Thread.sleep(1000);
+        }
 
         long modifiedTime = System.currentTimeMillis();
-        Files.setLastModifiedTime(Paths.get("src/test/resources/js/a1.js"),
-                FileTime.fromMillis(modifiedTime));
+        Path a1js = Paths.get("src/test/resources/js/a1.js");
+        byte[] a1jsContents = Files.readAllBytes(a1js);
+        Files.write(a1js, a1jsContents);
 
-        //Thread.sleep(2000);
-        //assertTrue(Files.getLastModifiedTime(aggregatedJs).to(TimeUnit.MILLISECONDS) > modifiedTime);
+        for(int i=0; ; i++) {
+            if (Files.getLastModifiedTime(aggregatedJs)
+                    .to(TimeUnit.MILLISECONDS) > modifiedTime)
+                break;
+            if (i > 5)
+                fail();
+            Thread.sleep(1000);
+        }
+
         service.shutdown();
     }
 }
