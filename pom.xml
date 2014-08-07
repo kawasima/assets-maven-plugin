@@ -9,7 +9,7 @@
 
 	<groupId>net.unit8.maven.plugins</groupId>
 	<artifactId>assets-maven-plugin</artifactId>
-	<version>0.2.0</version>
+	<version>0.2.0-SNAPSHOT</version>
 	<packaging>maven-plugin</packaging>
 
 	<name>assets-maven-plugin</name>
@@ -159,8 +159,8 @@
 	</licenses>
 
   <scm>
-    <connection>scm:git:https://github.com/kawasima/assets-maven-plugin/tags/assets-maven-plugin-0.2.0</connection>
-    <developerConnection>scm:git:https://github.com/kawasima/assets-maven-plugin/tags/assets-maven-plugin-0.2.0</developerConnection>
-    <url>https://github.com/assets-maven-plugin/tags/assets-maven-plugin-0.2.0</url>
+    <connection>scm:git:https://github.com/kawasima/assets-maven-plugin.git</connection>
+    <developerConnection>scm:git:https://github.com/kawasima/assets-maven-plugin.git</developerConnection>
+    <url>https://github.com/kawasima/assets-maven-plugin.git</url>
   </scm>
 </project>
